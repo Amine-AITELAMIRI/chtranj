@@ -278,11 +278,6 @@
       const filePattern = generateFilePattern(fileTo, quadrant);
       const rankPattern = generateRankPattern(rankTo, quadrant);
 
-      console.log(`Piece Pattern (${piece}):`, piecePattern);
-      console.log(`Quadrant Pattern (${quadrant}):`, quadrantPattern);
-      console.log(`File Pattern (${fileTo}):`, filePattern);
-      console.log(`Rank Pattern (${rankTo}):`, rankPattern);
-
       // Vibrate for piece
       navigator.vibrate(piecePattern);
 
@@ -306,7 +301,6 @@
 
     // Event listener for when a move is played
     socket.on('move_played', (data) => {
-      console.log(`Move played signal received.`);
       // Handle the move_played event as needed
       // Clear any ongoing vibrations and timeouts
       navigator.vibrate([]);

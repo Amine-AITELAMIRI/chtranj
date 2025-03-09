@@ -68,7 +68,6 @@
             headers: { "Content-Type": "application/json" },
             data: JSON.stringify(data),
             onload(response) {
-                console.log(`Backend response (${route}):`, response.responseText);
                 if (callback) callback();
             },
             onerror(error) {
@@ -92,19 +91,13 @@
             // Check if the selected player matches the active color, or if no player is selected (default to both players)
             if (selectedPlayer && activeColorNow !== selectedPlayer) return;
 
+            // Send move_played immediately
+            sendToBackend("move_played", { type: "move_played" });
+
             if (!awaitingResponse) {
                 awaitingResponse = true;
                 sendToBackend("update_fen", { type: "fen_update", fen: currentFEN }, () => {
                     awaitingResponse = false;
-                    console.log(`FEN update sent: ${currentFEN}`);
-
-                    if (pendingMovePlayed) {
-                        sendToBackend("move_played", { type: "move_played" }, () => {
-                            console.log(`Pending move_played signal sent.`);
-                            pendingMovePlayed = false;
-                            sendToBackend("update_fen", { type: "fen_update", fen: getFEN() });
-                        });
-                    }
                 });
             } else {
                 if (activeColorPrev && activeColorNow !== activeColorPrev) {
@@ -126,7 +119,6 @@
     // Function to re-fetch the selected player and restart observing board changes
     function updateSelectedPlayerAndObserve() {
         fetchSelectedPlayer(() => {
-            console.log('Re-fetching selected player and restarting observation.');
             observeBoardChanges();
         });
     }
