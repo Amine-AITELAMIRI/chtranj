@@ -40,7 +40,7 @@
         return null;
     }
 
-    function sendToBackend(route, data) {
+    function sendToBackend(route, data, callback) {
         GM_xmlhttpRequest({
             method: "POST",
             url: `https://cg-s5v9.onrender.com/${route}`, // Dynamic route
@@ -48,6 +48,7 @@
             data: JSON.stringify(data),
             onload(response) {
                 console.log(`Backend response (${route}):`, response.responseText);
+                if (callback) callback();
             },
             onerror(error) {
                 console.error(`Error sending data to ${route}:`, error);
@@ -64,19 +65,20 @@
             if (!currentFEN || currentFEN === previousFEN) return;
 
             // Send FEN to backend whenever the board changes
-            sendToBackend("update_fen", { type: "board_change", fen: currentFEN });
-            console.log(`Board changed. FEN sent: ${currentFEN}`);
+            sendToBackend("update_fen", { type: "board_change", fen: currentFEN }, () => {
+                console.log(`Board changed. FEN sent: ${currentFEN}`);
 
-            const activeColorNow = currentFEN.split(' ')[1];
-            const activeColorPrev = previousFEN ? previousFEN.split(' ')[1] : null;
+                const activeColorNow = currentFEN.split(' ')[1];
+                const activeColorPrev = previousFEN ? previousFEN.split(' ')[1] : null;
 
-            // Detect if a move was just played
-            if (activeColorPrev && activeColorNow !== activeColorPrev) {
-                sendToBackend("move_played", { type: "move_played" });
-                console.log(`Move played. Signal sent to /move_played.`);
-            }
+                // Detect if a move was just played
+                if (activeColorPrev && activeColorNow !== activeColorPrev) {
+                    sendToBackend("move_played", { type: "move_played" });
+                    console.log(`Move played. Signal sent to /move_played.`);
+                }
 
-            previousFEN = currentFEN;
+                previousFEN = currentFEN;
+            });
         });
 
         observer.observe(board, {
