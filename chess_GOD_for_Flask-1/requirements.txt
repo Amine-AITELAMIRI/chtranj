@@ -1,0 +1,9 @@
+Flask
+Flask-SocketIO
+python-chess
+requests
+Flask
+Flask-SocketIO
+eventlet
+python-chess
+gunicorn
