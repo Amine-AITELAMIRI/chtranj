@@ -11,7 +11,7 @@ import urllib.request
 
 STOCKFISH_URL = "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-avx2.tar"
 STOCKFISH_DIR = "./stockfish"
-STOCKFISH_PATH = os.path.join(STOCKFISH_DIR, "stockfish-ubuntu-x86-64-avx2")
+STOCKFISH_PATH = os.path.join(STOCKFISH_DIR, "stockfish")
 
 app = Flask(__name__, static_folder='.')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
@@ -24,7 +24,7 @@ def download_stockfish():
             os.makedirs(STOCKFISH_DIR)
         tar_path = os.path.join(STOCKFISH_DIR, "stockfish-ubuntu-x86-64-avx2.tar")
         urllib.request.urlretrieve(STOCKFISH_URL, tar_path)
-        subprocess.run(["tar", "-xvf", tar_path, "-C", STOCKFISH_DIR, "--wildcards", "*/stockfish-ubuntu-x86-64-avx2"])
+        subprocess.run(["tar", "-xvf", tar_path, "-C", STOCKFISH_DIR])
         os.remove(tar_path)
 
 def get_best_move(fen):
