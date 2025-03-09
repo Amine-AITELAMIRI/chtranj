@@ -11,7 +11,7 @@ import urllib.request
 
 STOCKFISH_URL = "https://github.com/official-stockfish/Stockfish/releases/download/sf_17/stockfish-ubuntu-x86-64-avx2.tar"
 STOCKFISH_DIR = "./stockfish"
-STOCKFISH_PATH = os.path.join(STOCKFISH_DIR, "stockfish-ubuntu-x86-64-avx2")
+STOCKFISH_PATH = os.path.join(STOCKFISH_DIR, "stockfish/stockfish-ubuntu-x86-64-avx2")
 
 app = Flask(__name__, static_folder='static')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
