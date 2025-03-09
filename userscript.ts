@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         ChessG
+// @name         ChessGod
 // @namespace    http://tampermonkey.net/
 // @version      1.6
 // @description  Sends FEN to backend when it's your turn and sends a special signal when you play a move via a different route, ensuring proper order of requests. Allows updating FEN for a specific player based on selection from index.html.
