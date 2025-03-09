@@ -10,7 +10,7 @@
   <div id="move">Waiting for moves...</div>
 
   <script>
-    const socket = io("http://localhost:5000"); // Replace with your server IP and port
+    const socket = io(); // Use relative URL to connect to the same server
 
     // Vibration patterns for quadrants
     const quadrantVibrationPatterns = {
