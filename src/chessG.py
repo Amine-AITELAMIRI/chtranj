@@ -26,8 +26,14 @@ def download_stockfish():
         urllib.request.urlretrieve(STOCKFISH_URL, tar_path)
         subprocess.run(["tar", "-xvf", tar_path, "-C", STOCKFISH_DIR])
         os.remove(tar_path)
+        if not os.path.exists(STOCKFISH_PATH):
+            raise FileNotFoundError(f"Stockfish binary not found at {STOCKFISH_PATH} after extraction.")
+        else:
+            print("Stockfish binary downloaded and extracted successfully.")
 
 def get_best_move(fen):
+    if not os.path.exists(STOCKFISH_PATH):
+        download_stockfish()
     board = chess.Board(fen)
     with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
         result = engine.analyse(board, chess.engine.Limit(time=1.0))
