@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Chess.com Live Game FEN Extractor (Your Turn + Move Played)
+// @name         ChessG
 // @namespace    http://tampermonkey.net/
 // @version      1.4
-// @description  Sends FEN to backend whenever the board changes and sends a special signal when you play a move via a different route.
+// @description  Sends FEN to backend when it's your turn and sends a special signal when you play a move via a different route, ensuring proper order of requests.
 // @author       You
 // @match        https://www.chess.com/play/*
 // @match        https://www.chess.com/game/*
@@ -13,6 +13,8 @@
     'use strict';
 
     let previousFEN = null;
+    let awaitingResponse = false;
+    let pendingMovePlayed = false;
 
     function findChessBoard() {
         const board = document.querySelector('wc-chess-board');
@@ -52,6 +54,7 @@
             },
             onerror(error) {
                 console.error(`Error sending data to ${route}:`, error);
+                if (callback) callback();
             }
         });
     }
@@ -64,21 +67,30 @@
             const currentFEN = getFEN();
             if (!currentFEN || currentFEN === previousFEN) return;
 
-            // Send FEN to backend whenever the board changes
-            sendToBackend("update_fen", { type: "board_change", fen: currentFEN }, () => {
-                console.log(`Board changed. FEN sent: ${currentFEN}`);
+            const activeColorNow = currentFEN.split(' ')[1];
+            const activeColorPrev = previousFEN ? previousFEN.split(' ')[1] : null;
 
-                const activeColorNow = currentFEN.split(' ')[1];
-                const activeColorPrev = previousFEN ? previousFEN.split(' ')[1] : null;
+            if (!awaitingResponse) {
+                awaitingResponse = true;
+                sendToBackend("update_fen", { type: "fen_update", fen: currentFEN }, () => {
+                    awaitingResponse = false;
+                    console.log(`FEN update sent: ${currentFEN}`);
 
-                // Detect if a move was just played
+                    if (pendingMovePlayed) {
+                        sendToBackend("move_played", { type: "move_played" }, () => {
+                            console.log(`Pending move_played signal sent.`);
+                            pendingMovePlayed = false;
+                            sendToBackend("update_fen", { type: "fen_update", fen: getFEN() });
+                        });
+                    }
+                });
+            } else {
                 if (activeColorPrev && activeColorNow !== activeColorPrev) {
-                    sendToBackend("move_played", { type: "move_played" });
-                    console.log(`Move played. Signal sent to /move_played.`);
+                    pendingMovePlayed = true;
                 }
+            }
 
-                previousFEN = currentFEN;
-            });
+            previousFEN = currentFEN;
         });
 
         observer.observe(board, {
