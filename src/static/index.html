@@ -4,17 +4,80 @@
   <meta charset="UTF-8">
   <title>Chess Best Move Notifier</title>
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    #move {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+    form {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .sneaky {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-  <h2>Best Move:</h2>
-  <div id="move">Waiting for moves...</div>
+  <div class="container" id="content">
+    <h2>Best Move:</h2>
+    <div id="move">Waiting for moves...</div>
 
-  <h2>Set ELO Level:</h2>
-  <form id="eloForm">
-    <label for="elo">ELO Level:</label>
-    <input type="number" id="elo" name="elo" min="100" max="3000" step="50" required>
-    <button type="submit">Set ELO</button>
-  </form>
+    <h2>Set ELO Level:</h2>
+    <form id="eloForm">
+      <label for="elo">ELO Level:</label>
+      <input type="number" id="elo" name="elo" min="100" max="3000" step="50" required>
+      <button type="submit">Set ELO</button>
+    </form>
+
+    <div class="sneaky">
+      <label for="sneakyCheckbox">Sneaky Mode</label>
+      <input type="checkbox" id="sneakyCheckbox">
+    </div>
+  </div>
 
   <script>
     const socket = io(); // Use relative URL to connect to the same server
@@ -40,6 +103,15 @@
       .catch(error => {
         console.error('Error:', error);
       });
+    });
+
+    document.getElementById('sneakyCheckbox').addEventListener('change', function() {
+      const content = document.getElementById('content');
+      if (this.checked) {
+        content.style.display = 'none';
+      } else {
+        content.style.display = 'block';
+      }
     });
 
     // Vibration patterns for quadrants
@@ -185,9 +257,5 @@
       console.error('Connection Error:', error);
     });
   </script>
-
-  <!-- Add an element to display debug information -->
-  <div id="debug" style="margin-top:20px; font-size:14px; color:#333;"></div>
-
 </body>
 </html>

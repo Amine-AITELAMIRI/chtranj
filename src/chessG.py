@@ -17,7 +17,7 @@ app = Flask(__name__, static_folder='static')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 last_fen = None
-elo_level = 1350  # Default ELO level
+elo_level = 2200  # Default ELO level
 
 def download_stockfish():
     if not os.path.exists(STOCKFISH_PATH):
@@ -38,6 +38,7 @@ def get_best_move(fen):
     board = chess.Board(fen)
     with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
         engine.configure({"UCI_LimitStrength": True, "UCI_Elo": elo_level})
+        print(f"Using ELO level: {elo_level}")  # Log the ELO level being used
         result = engine.analyse(board, chess.engine.Limit(time=1.0))
         if "pv" in result:
             best_move = result["pv"][0]
@@ -76,6 +77,7 @@ def set_elo():
     elo = data.get("elo")
     if elo and isinstance(elo, int):
         elo_level = elo
+        print(f"ELO level set to: {elo_level}")  # Log the new ELO level
         return jsonify({"status": "success", "elo_level": elo_level})
     return jsonify({"status": "error", "message": "Invalid ELO level"}), 400
 
