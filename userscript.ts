@@ -70,7 +70,7 @@
             const activeColorNow = currentFEN.split(' ')[1];
             const activeColorPrev = previousFEN ? previousFEN.split(' ')[1] : null;
 
-            // Detect if player just made a move
+            // Detect if a move was just played
             if (activeColorPrev && activeColorNow !== activeColorPrev) {
                 sendToBackend("move_played", { type: "move_played" });
                 console.log(`Move played. Signal sent to /move_played.`);
