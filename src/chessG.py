@@ -17,6 +17,7 @@ app = Flask(__name__, static_folder='static')
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 last_fen = None
+elo_level = 1350  # Default ELO level
 
 def download_stockfish():
     if not os.path.exists(STOCKFISH_PATH):
@@ -36,6 +37,7 @@ def get_best_move(fen):
         download_stockfish()
     board = chess.Board(fen)
     with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
+        engine.configure({"UCI_LimitStrength": True, "UCI_Elo": elo_level})
         result = engine.analyse(board, chess.engine.Limit(time=1.0))
         if "pv" in result:
             best_move = result["pv"][0]
@@ -66,6 +68,16 @@ def move_played():
         socketio.emit('move_played', {'message': 'Move played'})
         return jsonify({"status": "success", "message": "Move played event emitted"})
     return jsonify({"status": "error", "message": "Invalid data"}), 400
+
+@app.route('/set_elo', methods=['POST'])
+def set_elo():
+    global elo_level
+    data = request.json
+    elo = data.get("elo")
+    if elo and isinstance(elo, int):
+        elo_level = elo
+        return jsonify({"status": "success", "elo_level": elo_level})
+    return jsonify({"status": "error", "message": "Invalid ELO level"}), 400
 
 if __name__ == "__main__":
     download_stockfish()

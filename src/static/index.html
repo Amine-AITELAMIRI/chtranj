@@ -9,8 +9,38 @@
   <h2>Best Move:</h2>
   <div id="move">Waiting for moves...</div>
 
+  <h2>Set ELO Level:</h2>
+  <form id="eloForm">
+    <label for="elo">ELO Level:</label>
+    <input type="number" id="elo" name="elo" min="100" max="3000" step="50" required>
+    <button type="submit">Set ELO</button>
+  </form>
+
   <script>
     const socket = io(); // Use relative URL to connect to the same server
+
+    document.getElementById('eloForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const elo = document.getElementById('elo').value;
+      fetch('/set_elo', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ elo: parseInt(elo) })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          alert(`ELO level set to ${data.elo_level}`);
+        } else {
+          alert(`Error: ${data.message}`);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
 
     // Vibration patterns for quadrants
     const quadrantVibrationPatterns = {
