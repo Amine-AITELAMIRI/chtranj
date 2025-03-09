@@ -18,7 +18,7 @@
     let selectedPlayer = null; // Variable to store the selected player
 
     // Function to get the selected player from the backend
-    function fetchSelectedPlayer() {
+    function fetchSelectedPlayer(callback) {
         GM_xmlhttpRequest({
             method: "GET",
             url: "https://cg-s5v9.onrender.com/get_selected_player",
@@ -26,9 +26,11 @@
                 const data = JSON.parse(response.responseText);
                 selectedPlayer = data.selectedPlayer;
                 console.log(`Selected player fetched: ${selectedPlayer}`);
+                if (callback) callback();
             },
             onerror(error) {
                 console.error(`Error fetching selected player:`, error);
+                if (callback) callback();
             }
         });
     }
@@ -121,6 +123,14 @@
         });
     }
 
+    // Function to re-fetch the selected player and restart observing board changes
+    function updateSelectedPlayerAndObserve() {
+        fetchSelectedPlayer(() => {
+            console.log('Re-fetching selected player and restarting observation.');
+            observeBoardChanges();
+        });
+    }
+
     // Wait for the board to load before observing
     const maxWaitTime = 10000; // 10 seconds timeout
     const startTime = Date.now();
@@ -141,7 +151,9 @@
         }
     }
 
-    fetchSelectedPlayer(); // Fetch the selected player when the script starts
-    waitForBoard();
+    fetchSelectedPlayer(waitForBoard); // Fetch the selected player and then wait for the board
+
+    // Listen for changes in the selected player from the backend
+    setInterval(updateSelectedPlayerAndObserve, 5000); // Check for updates every 5 seconds
 
 })();
