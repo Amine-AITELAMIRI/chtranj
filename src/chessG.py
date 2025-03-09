@@ -39,7 +39,7 @@ def get_best_move(fen):
     with chess.engine.SimpleEngine.popen_uci(STOCKFISH_PATH) as engine:
         engine.configure({"UCI_LimitStrength": True, "UCI_Elo": elo_level})
         print(f"Using ELO level: {elo_level}")  # Log the ELO level being used
-        result = engine.analyse(board, chess.engine.Limit(time=1.0))
+        result = engine.analyse(board, chess.engine.Limit(time=0.5))
         if "pv" in result:
             best_move = result["pv"][0]
             return board.san(best_move)

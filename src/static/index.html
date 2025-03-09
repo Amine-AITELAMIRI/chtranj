@@ -59,6 +59,15 @@
     .sneaky {
       margin-top: 20px;
     }
+    #sneakyCheckboxContainer {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 <body>
@@ -72,11 +81,11 @@
       <input type="number" id="elo" name="elo" min="100" max="3000" step="50" required>
       <button type="submit">Set ELO</button>
     </form>
+  </div>
 
-    <div class="sneaky">
-      <label for="sneakyCheckbox">Sneaky Mode</label>
-      <input type="checkbox" id="sneakyCheckbox">
-    </div>
+  <div id="sneakyCheckboxContainer">
+    <label for="sneakyCheckbox">Sneaky Mode</label>
+    <input type="checkbox" id="sneakyCheckbox">
   </div>
 
   <script>
@@ -114,139 +123,17 @@
       }
     });
 
-    // Vibration patterns for quadrants
-    const quadrantVibrationPatterns = {
-        'top-left': [400, 100, 400],    // Top-left quadrant: 2 short pulses with a pause
-        'top-right': [400, 100, 200],   // Top-right quadrant: 1 short pulse, 1 long pulse
-        'bottom-left': [200, 100, 200], // Bottom-left quadrant: 1 long pulse, 1 short pulse
-        'bottom-right': [200, 100, 400] // Bottom-right quadrant: 2 long pulses with a pause
-    };
-
-    // Function to generate vibration pattern for files (columns a-h) within a quadrant
-    function generateFilePattern(file, quadrant) {
-        const fileMap = {
-            'a': 1,
-            'b': 2,
-            'c': 3,
-            'd': 4,
-            'e': 5,
-            'f': 6,
-            'g': 7,
-            'h': 8
-        };
-        let pulses = fileMap[file];
-        if (quadrant === 'top-right' || quadrant === 'bottom-right') {
-            pulses = 9 - pulses; // Reverse counting for right quadrants
-        }
-        return Array(pulses).fill(200).flatMap(pulse => [pulse, 100]).slice(0, -1);
-    }
-
-    // Function to generate vibration pattern for ranks (rows 1-8) within a quadrant
-    function generateRankPattern(rank, quadrant) {
-        let pulses = parseInt(rank);
-        if (quadrant === 'top-left' || quadrant === 'top-right') {
-            pulses = 9 - pulses; // Reverse counting for top quadrants
-        }
-        return Array(pulses).fill(200).flatMap(pulse => [pulse, 100]).slice(0, -1);
-    }
-
-    // Vibration patterns for pieces (in milliseconds)
-    const pieceVibrationPatterns = {
-        'P': [200],          // Pawn: 1 short pulse
-        'N': [200, 300, 200],     // Knight: 2 short pulses with a pause
-        'B': [400],          // Bishop: 1 long pulse
-        'R': [400, 300, 400],     // Rook: 2 long pulses with a pause
-        'Q': [600],          // Queen: 1 very long pulse
-        'K': [600, 300, 600]      // King: 2 very long pulses with a pause
-    };
-
-    // Adjustable pause delays (in milliseconds)
-    const pauseBetweenPieceAndQuadrant = 2000; // Pause between piece and quadrant vibrations
-    const pauseBetweenQuadrantAndFile = 3000; // Pause between quadrant and file vibrations
-    const pauseBetweenFileAndRank = 2000; // Pause between file and rank vibrations
-
-    let lastMove = null; // Track the last move to avoid duplicate vibrations
-    let vibrationTimeouts = []; // Track timeouts to clear them when a new move is received
-
     socket.on('connect', () => {
       console.log('Connected to backend');
     });
 
     socket.on('best_move', (data) => {
       const move = data.move;
-
-      // Clear any ongoing vibrations and timeouts
-      navigator.vibrate([]);
-      vibrationTimeouts.forEach(timeout => clearTimeout(timeout));
-      vibrationTimeouts = [];
-
       document.getElementById("move").innerText = `Best Move: ${move}`;
-
-      // Parse the destination square (e.g., "Nf3", "Bxc6", "O-O", "e4", "Bxc6+")
-      let piece, fileTo, rankTo, quadrant;
-
-      if (move === 'O-O' || move === 'O-O-O') {
-        piece = 'K';
-        fileTo = move === 'O-O' ? 'g' : 'c';
-        rankTo = '1'; // Assuming white castling, adjust if needed for black
-      } else {
-        const match = move.match(/([PNBRQK]?)([a-h])?x?([a-h][1-8])\+?/);
-        piece = match[1] || 'P'; // Default to Pawn if no piece is specified
-        fileTo = match[3][0];    // Extract file of destination square (e.g., "f")
-        rankTo = match[3][1];    // Extract rank of destination square (e.g., "3")
-      }
-
-      // Determine the quadrant based on file and rank
-      if (fileTo <= 'd' && rankTo >= '5') {
-        quadrant = 'top-left';
-      } else if (fileTo >= 'e' && rankTo >= '5') {
-        quadrant = 'top-right';
-      } else if (fileTo <= 'd' && rankTo <= '4') {
-        quadrant = 'bottom-left';
-      } else {
-        quadrant = 'bottom-right';
-      }
-
-      const quadrantPattern = quadrantVibrationPatterns[quadrant];
-      const piecePattern = pieceVibrationPatterns[piece];
-      const filePattern = generateFilePattern(fileTo, quadrant);
-      const rankPattern = generateRankPattern(rankTo, quadrant);
-
-      console.log(`Piece Pattern (${piece}):`, piecePattern);
-      console.log(`Quadrant Pattern (${quadrant}):`, quadrantPattern);
-      console.log(`File Pattern (${fileTo}):`, filePattern);
-      console.log(`Rank Pattern (${rankTo}):`, rankPattern);
-
-      // Vibrate for piece
-      navigator.vibrate(piecePattern);
-
-      // Pause before vibrating for quadrant
-      vibrationTimeouts.push(setTimeout(() => {
-        navigator.vibrate(quadrantPattern);
-
-        // Pause before vibrating for file
-        vibrationTimeouts.push(setTimeout(() => {
-          navigator.vibrate(filePattern);
-
-          // Pause before vibrating for rank
-          vibrationTimeouts.push(setTimeout(() => {
-            navigator.vibrate(rankPattern);
-          }, pauseBetweenFileAndRank)); // Pause before rank vibrations
-
-        }, pauseBetweenQuadrantAndFile)); // Pause before file vibrations
-
-      }, pauseBetweenPieceAndQuadrant)); // Pause before quadrant vibrations
     });
 
-    // Event listener for when a move is played
     socket.on('move_played', (data) => {
       console.log(`Move played signal received.`);
-      // Handle the move_played event as needed
-      // Clear any ongoing vibrations and timeouts
-      navigator.vibrate([]);
-      vibrationTimeouts.forEach(timeout => clearTimeout(timeout));
-      vibrationTimeouts = [];
-      lastMove = null; // Reset lastMove to ensure vibration on next best move
     });
 
     socket.on('disconnect', () => {
