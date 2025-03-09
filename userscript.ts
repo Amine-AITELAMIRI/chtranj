@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         ChessG
 // @namespace    http://tampermonkey.net/
-// @version      1.4
-// @description  Sends FEN to backend when it's your turn and sends a special signal when you play a move via a different route, ensuring proper order of requests.
+// @version      1.5
+// @description  Sends FEN to backend when it's your turn and sends a special signal when you play a move via a different route, ensuring proper order of requests. Allows updating FEN for a specific player based on selection from index.html.
 // @author       You
 // @match        https://www.chess.com/play/*
 // @match        https://www.chess.com/game/*
@@ -15,6 +15,14 @@
     let previousFEN = null;
     let awaitingResponse = false;
     let pendingMovePlayed = false;
+    let selectedPlayer = null; // Variable to store the selected player
+
+    // Function to get the selected player from index.html
+    function getSelectedPlayer() {
+        // Assuming the selected player is stored in a global variable in index.html
+        // You can modify this function to get the selected player in a different way if needed
+        return window.selectedPlayer || null;
+    }
 
     function findChessBoard() {
         const board = document.querySelector('wc-chess-board');
@@ -70,6 +78,9 @@
             const activeColorNow = currentFEN.split(' ')[1];
             const activeColorPrev = previousFEN ? previousFEN.split(' ')[1] : null;
 
+            // Check if the selected player matches the active color, or if no player is selected (default to both players)
+            if (selectedPlayer && activeColorNow !== selectedPlayer) return;
+
             if (!awaitingResponse) {
                 awaitingResponse = true;
                 sendToBackend("update_fen", { type: "fen_update", fen: currentFEN }, () => {
@@ -114,6 +125,7 @@
         const board = findChessBoard();
         if (board?.game && board.game.getFEN) {
             previousFEN = getFEN(); // Initialize previous FEN
+            selectedPlayer = getSelectedPlayer(); // Get the selected player
             observeBoardChanges();
             console.log('Chess Assistant: Board found and observing started.');
         } else {

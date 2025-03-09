@@ -69,6 +69,20 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
   </style>
+  <script>
+    // Global variable to store the selected player
+    window.selectedPlayer = null;
+
+    function setSelectedPlayer(player) {
+      window.selectedPlayer = player;
+      console.log(`Selected player: ${player}`);
+    }
+
+    function resetSelectedPlayer() {
+      window.selectedPlayer = null;
+      console.log('Selected player: both');
+    }
+  </script>
 </head>
 <body>
   <div class="container" id="content">
@@ -81,6 +95,11 @@
       <input type="number" id="elo" name="elo" min="100" max="3000" step="50" required>
       <button type="submit">Set ELO</button>
     </form>
+
+    <h2>Select Player:</h2>
+    <button onclick="setSelectedPlayer('w')">White</button>
+    <button onclick="setSelectedPlayer('b')">Black</button>
+    <button onclick="resetSelectedPlayer()">Both</button>
   </div>
 
   <div id="sneakyCheckboxContainer">
