@@ -76,11 +76,49 @@
     function setSelectedPlayer(player) {
       window.selectedPlayer = player;
       console.log(`Selected player: ${player}`);
+      // Send the selected player to the backend
+      fetch('/set_selected_player', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ selectedPlayer: player })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          console.log(`Selected player set to ${data.selectedPlayer}`);
+        } else {
+          console.error(`Error: ${data.message}`);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     }
 
     function resetSelectedPlayer() {
       window.selectedPlayer = null;
       console.log('Selected player: both');
+      // Send the reset selection to the backend
+      fetch('/set_selected_player', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ selectedPlayer: null })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          console.log('Selected player set to both');
+        } else {
+          console.error(`Error: ${data.message}`);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
     }
   </script>
 </head>

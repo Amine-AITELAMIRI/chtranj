@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         ChessG
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  Sends FEN to backend when it's your turn and sends a special signal when you play a move via a different route, ensuring proper order of requests. Allows updating FEN for a specific player based on selection from index.html.
 // @author       You
 // @match        https://www.chess.com/play/*
@@ -17,11 +17,20 @@
     let pendingMovePlayed = false;
     let selectedPlayer = null; // Variable to store the selected player
 
-    // Function to get the selected player from index.html
-    function getSelectedPlayer() {
-        // Assuming the selected player is stored in a global variable in index.html
-        // You can modify this function to get the selected player in a different way if needed
-        return window.selectedPlayer || null;
+    // Function to get the selected player from the backend
+    function fetchSelectedPlayer() {
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://cg-s5v9.onrender.com/get_selected_player",
+            onload(response) {
+                const data = JSON.parse(response.responseText);
+                selectedPlayer = data.selectedPlayer;
+                console.log(`Selected player fetched: ${selectedPlayer}`);
+            },
+            onerror(error) {
+                console.error(`Error fetching selected player:`, error);
+            }
+        });
     }
 
     function findChessBoard() {
@@ -125,7 +134,6 @@
         const board = findChessBoard();
         if (board?.game && board.game.getFEN) {
             previousFEN = getFEN(); // Initialize previous FEN
-            selectedPlayer = getSelectedPlayer(); // Get the selected player
             observeBoardChanges();
             console.log('Chess Assistant: Board found and observing started.');
         } else {
@@ -133,6 +141,7 @@
         }
     }
 
+    fetchSelectedPlayer(); // Fetch the selected player when the script starts
     waitForBoard();
 
 })();

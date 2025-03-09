@@ -18,6 +18,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 last_fen = None
 elo_level = 2200  # Default ELO level
+selected_player = None  # Global variable to store the selected player
 
 def download_stockfish():
     if not os.path.exists(STOCKFISH_PATH):
@@ -80,6 +81,17 @@ def set_elo():
         print(f"ELO level set to: {elo_level}")  # Log the new ELO level
         return jsonify({"status": "success", "elo_level": elo_level})
     return jsonify({"status": "error", "message": "Invalid ELO level"}), 400
+
+@app.route('/set_selected_player', methods=['POST'])
+def set_selected_player():
+    global selected_player
+    data = request.json
+    selected_player = data.get('selectedPlayer')
+    return jsonify({'status': 'success', 'selectedPlayer': selected_player})
+
+@app.route('/get_selected_player', methods=['GET'])
+def get_selected_player():
+    return jsonify({'selectedPlayer': selected_player})
 
 if __name__ == "__main__":
     download_stockfish()
